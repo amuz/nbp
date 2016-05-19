@@ -1,5 +1,4 @@
 {
-	"testcommand1": "ls",
-	"testcommand2": "ls -la",
-	"testcommand3": "cd"
+	"id": 1,
+	"testcommand1": "ls"
 }
