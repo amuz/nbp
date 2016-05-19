@@ -25,7 +25,21 @@ botObj.app.get('/bot', function (req, res) {
 	botObj.loadCommand (res, req.query.loader, req);
 });
 
-botObj.app.listen(3000, function () {
+botObj.app.get('/botloadjson', function (req, res) {
+	//res.json({ user: 'tobi' });
+	//res.send('queryparam ' + req.query.loader);
+	// botObj.loadCommand (res, req.query.loader, req);
+	fs.readFile(__dirname + '/botqueue/queue.json', 'utf8', function (err,data) {
+	  if (err) {
+	    return console.log(err);
+	  }
+
+	  //console.log(data);
+	  res.send(data);
+	});
+});
+
+botObj.app.listen(80, function () {
   console.log('Example app listening on port 3000!');
 });
 
