@@ -1,66 +1,84 @@
 var express = require('express'),
-	fs = require('fs');
+	fs = require('fs'),
+	jf = require('jsonfile');
 var botObj = {};
 
 botObj.app = express();
 
 botObj.commandList = {
-	loadserver1: "think server restart",
-	loadserver2: "landingpage.sh batch file load"
+	loadserver1: {
+		"command1": "ls"
+	},
+	loadserver2: {
+		"command2": "ls -la"
+	}
 }
-
-botObj.loadCommand = function (res, command, req) {
-	res.send("queryparam2 " + botObj.commandList[command]);
-
-	botObj.updateCommandFile(res, botObj.commandList[command], req);
-}
-
-// app.get('/', function (req, res) {
-// 	res.json({ user: 'tobi' });
-// });
 
 botObj.app.get('/bot', function (req, res) {
-	//res.json({ user: 'tobi' });
-	//res.send('queryparam ' + req.query.loader);
-	botObj.loadCommand (res, req.query.loader, req);
+	var date = new Date();
+	var obj = {"id": date.getTime(),command: "release/next"};
+	botObj.appendBotQueue(res, obj);
 });
 
-botObj.app.get('/botloadjson', function (req, res) {
-	//res.json({ user: 'tobi' });
-	//res.send('queryparam ' + req.query.loader);
-	// botObj.loadCommand (res, req.query.loader, req);
-	fs.readFile(__dirname + '/botqueue/queue.json', 'utf8', function (err,data) {
-	  if (err) {
-	    return console.log(err);
-	  }
+// botObj.app.get('/botloadjson', function (req, res) {
 
-	  //console.log(data);
-	  res.send(data);
+// 	fs.readFile(__dirname + '/botqueue/queue.json', 'utf8', function (err,data) {
+// 	  if (err) {
+// 	    return console.log(err);
+// 	  }
+// 	  res.send(data);
+// 	});
+// });
+
+botObj.app.get('/botupdatejson', function (req, res) {
+	var queueID
+		newQueueObj = [];
+
+	filePath = __dirname + '/botqueue/queue.json';
+
+	if (req.query.id && req.query.id !== '') {
+		queueID = req.query.id;
+
+		jf.readFile(filePath, function(err,obj){
+			var i,
+				sliceIndex = -1;
+			fileQueueObj = obj;
+
+			for (i=0; i< fileQueueObj.length; i++) {
+				if (fileQueueObj[i].id != queueID) {
+					newQueueObj.push(fileQueueObj[i]);
+				}
+			}
+			
+			fs.writeFile(filePath, JSON.stringify(newQueueObj), function (err) {
+
+			});
+		});
+	}
+	jf.readFile(filePath, function(err,obj){
+		res.send(obj);
 	});
+	
 });
 
-botObj.app.listen(80, function () {
+botObj.appendBotQueue = function (res,obj){
+
+	var newObj = obj,
+		filePath = __dirname + '/botqueue/queue.json',
+		fileQueueObj;
+
+	jf.readFile(filePath, function(err,obj){
+		fileQueueObj = obj;
+		fileQueueObj.push(newObj);
+		res.send(fileQueueObj);
+
+
+		fs.writeFile(filePath, JSON.stringify(fileQueueObj), function (err) {
+		  //console.log(err);
+		});
+	});
+}
+
+botObj.app.listen(3000, function () {
   console.log('Example app listening on port 3000!');
 });
-
-botObj.updateCommandFile = function (res, command, req) {
-	//__dirname + '/botcommandlist/data.txt'
-	fs.appendFile(__dirname + '/botcommandlist/data.txt', '\r\n' + command , function (err) {
-
-	});
-
-
-	// console.log(__dirname);
- //    var body = '';
- //    filePath = __dirname + '/botcommandlist/data.txt';
- //    req.on('data', function(data) {
- //        body += data;
- //        console.log(data);
- //    });
-
- //    req.on('end', function (){
- //        // fs.appendFile(filePath, body, function() {
- //            res.end();
- //        // });
- //    });
-}
